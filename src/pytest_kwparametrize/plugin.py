@@ -35,7 +35,7 @@ def _has_one_iterable(marker_args: List[Any]):
     return (
         len(marker_args) == 1
         and isinstance(marker_args[0], Iterable)
-        and not isinstance(marker_args, Mapping)
+        and not isinstance(marker_args[0], Mapping)
     )
 
 
@@ -56,21 +56,10 @@ def _parse_marker_kwargs(kwargs: Dict[str, Any]):
     if set(defaults) == {"defaults"}:
         # called like:
         # @pytest.mark.kwaparametrize(..., defaults=dict(param1=, param2=, ...))
-        return parametrize_kwargs, defaults["defaults"]
+        return defaults["defaults"], parametrize_kwargs
     # called like:
     # @pytest.mark.kwaparametrize(..., param1=, param2=, ...)
-    return parametrize_kwargs, defaults
-
-
-def _fail_if_unknown_params(
-    params: Dict[str, Any], defaults: Dict[str, Any], metafunc: Metafunc
-) -> None:
-    unknown_params = set(params).difference(defaults)
-    if unknown_params:
-        fail(
-            f"In {metafunc.function.__name__}: Unknown parameter(s) {unknown_params}",
-            pytrace=False,
-        )
+    return defaults, parametrize_kwargs
 
 
 def _param_dicts_to_tuples(
@@ -78,7 +67,6 @@ def _param_dicts_to_tuples(
 ) -> List[Tuple[Any]]:
     argvalues = []
     for params in testcase_dicts:
-        _fail_if_unknown_params(params, defaults, metafunc)
         param_values = (
             _get_param(name, params, defaults, metafunc) for name in defaults
         )
@@ -89,7 +77,10 @@ def _param_dicts_to_tuples(
 def pytest_generate_tests(metafunc: Metafunc) -> None:
     for marker in metafunc.definition.iter_markers(name="kwparametrize"):
         testcase_dicts, parametrize_args = _parse_marker_args(marker.args)
-        parametrize_kwargs, defaults = _parse_marker_kwargs(marker.kwargs)
+        defaults, parametrize_kwargs = _parse_marker_kwargs(marker.kwargs)
+        for params in testcase_dicts:
+            for name in params:
+                defaults.setdefault(name, ...)
         testcase_tuples = _param_dicts_to_tuples(testcase_dicts, defaults, metafunc)
         metafunc.parametrize(
             list(defaults),
