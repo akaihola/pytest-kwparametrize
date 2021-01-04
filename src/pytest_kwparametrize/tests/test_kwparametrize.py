@@ -34,22 +34,45 @@ import pytest
                 yourparam=42,
             )
             def test_two_cases_two_params_default_and_required(myparam, yourparam):
-                assert myparam > 0
+                assert myparam in [1, 2]
                 assert yourparam == 42
             """,
             2,
         ),
         (
             """
-                @pytest.mark.kwparametrize(
-                    dict(myparam=1, yourparam=42),
-                    dict(myparam=2, yourparam=43),
-                )
-                def test_two_cases_two_params_no_defaults(myparam, yourparam):
-                    assert myparam in [1, 2]
-                    assert yourparam in [42, 43]
-                """,
+            @pytest.mark.kwparametrize(
+                dict(myparam=1, yourparam=42),
+                dict(myparam=2, yourparam=43),
+            )
+            def test_two_cases_two_params_no_defaults(myparam, yourparam):
+                assert myparam in [1, 2]
+                assert yourparam in [42, 43]
+            """,
             2,
+        ),
+        (
+            """
+            @pytest.mark.kwparametrize(
+                dict(myparam=1),
+                dict(myparam=2),
+                ids=["first case", "second case"],
+            )
+            def test_pytest_kwargs(myparam):
+                assert myparam in [1, 2]
+            """,
+            2,
+        ),
+        (
+            """
+            from pytest import LogCaptureFixture
+
+            @pytest.mark.kwparametrize(dict(myparam=1))
+            def test_fixture(caplog, myparam):
+                assert myparam == 1
+                assert isinstance(caplog, LogCaptureFixture)
+            """,
+            1,
         ),
     ],
 )
