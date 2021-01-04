@@ -1,4 +1,4 @@
-"""kwparametrize plugin"""
+"""Implementation of the ``kwparametrize`` Pytest plugin"""
 
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, Union
@@ -8,7 +8,7 @@ from _pytest.python import Metafunc
 from pytest import fail
 
 
-def get_keyword_parameters(function: Callable) -> List[str]:
+def _get_keyword_parameters(function: Callable) -> List[str]:
     return [
         param_name
         for param_name, param in signature(function).parameters.items()
@@ -20,13 +20,13 @@ def get_keyword_parameters(function: Callable) -> List[str]:
 # These keywords can't be used as parameter names for parametrized test cases.
 # Fish these from Pytest internals to hope for better forward compatibility.
 # In Pytest 6.1.2: ["indirect", "ids", "scope", "_param_mark"]
-PARAMETRIZE_KEYWORDS = set(get_keyword_parameters(Metafunc.parametrize)[3:])
+PARAMETRIZE_KEYWORDS = set(_get_keyword_parameters(Metafunc.parametrize)[3:])
 
 # Keyword argument names accepted by `pytest.param(...)`
 # These keywords can't be used as parameter names for parametrized test cases.
 # Fish these from Pytest internals to hope for better forward compatibility.
 # In Pytest 6.1.2: ["marks", "id"]
-PYTEST_PARAM_KEYWORDS = set(get_keyword_parameters(pytest.param))
+PYTEST_PARAM_KEYWORDS = set(_get_keyword_parameters(pytest.param))
 
 
 def _get_param(
@@ -98,7 +98,60 @@ def kwparametrize(
     *args: Union[List[Dict[str, Any]], Dict[str, Any]],
     **kwargs: Any,
 ) -> None:
-    """foo"""
+    """Add new invocations to the underlying test function using the list
+    of argvalues for the test function arguments.  Parametrization is performed
+    during the collection phase.  If you need to setup expensive resources
+    see about setting indirect to do it rather at test setup time.
+
+    :param metafunc:
+        A :py:class:`pytest.Metafunc` object representing the test function.
+        **Note:** The :ref:`pytest.mark.kwparametrize ref` decorator accepts all the same
+        arguments as this function except for ``metafunc`` which must be omitted.
+
+    :param args:
+        The list of test arguments determines how often a test is invoked with
+        different argument values.
+
+        If only one list value was specified as a positional argument,
+        it must contain test parameters as dictionaries.
+        If N positional arguments were specified, each of them must be a dictionary,
+        where each item specifies a value for the test function's respective parameter.
+
+    :param indirect:
+        A list of arguments' names (subset of argnames) or a boolean.
+        If True the list contains all names from the argnames. Each
+        argvalue corresponding to an argname in this list will
+        be passed as request.param to its respective argname fixture
+        function so that it can perform more expensive setups during the
+        setup phase of a test rather than at collection time.
+
+    :param ids:
+        Sequence of (or generator for) ids for ``argvalues``,
+        or a callable to return part of the id for each argvalue.
+
+        With sequences (and generators like :func:`itertools.count`) the
+        returned ids should be of type ``str``, ``int``, ``float``,
+        ``bool``, or ``None``.
+        They are mapped to the corresponding index in ``args``.
+        ``None`` means to use the auto-generated id.
+
+        If it is a callable it will be called for each entry in
+        ``args``, and the return value is used as part of the
+        auto-generated id for the whole set (where parts are joined with
+        dashes ("-")).
+        This is useful to provide more specific ids for certain items, e.g.
+        dates.  Returning ``None`` will use an auto-generated id.
+
+        If no ids are provided they will be generated automatically from
+        the args.
+
+    :param scope:
+        If specified it denotes the scope of the parameters.
+        The scope is used for grouping tests by parameter instances.
+        It will also override any fixture-function defined scope, allowing
+        to set a dynamic scope using test context or configuration.
+
+    """
     testcase_dicts = _parse_marker_args(args)
     defaults, parametrize_kwargs = _parse_marker_kwargs(kwargs)
     for params in testcase_dicts:
@@ -114,11 +167,13 @@ def kwparametrize(
 
 
 def pytest_generate_tests(metafunc: Metafunc) -> None:
+    """In Pytest's test generation hook, handle ``@pytest.mark.kwparametrize``"""
     for marker in metafunc.definition.iter_markers(name="kwparametrize"):
         kwparametrize(metafunc, *marker.args, _param_mark=marker, **marker.kwargs)
 
 
 def pytest_configure(config):
+    """Configure Pytest to know about the ``@pytest.mark.kwparametrize`` marker """
     config.addinivalue_line(
         "markers",
         "kwparametrize(*argvalues):"
