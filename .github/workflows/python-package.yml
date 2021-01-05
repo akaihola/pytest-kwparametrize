@@ -32,3 +32,6 @@ jobs:
     - name: Enforce Python style guide with Flake8
       run: |
         flake8
+    - name: Lint code with Pylint
+      run: |
+        pylint src

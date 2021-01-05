@@ -1,7 +1,8 @@
 """Implementation of the ``kwparametrize`` Pytest plugin"""
 
+from collections import abc
 from inspect import Parameter, signature
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 import pytest
 from _pytest.python import Metafunc
@@ -46,8 +47,8 @@ def _get_param(
 def _has_one_iterable(marker_args: List[Any]):
     return (
         len(marker_args) == 1
-        and isinstance(marker_args[0], Iterable)
-        and not isinstance(marker_args[0], Mapping)
+        and isinstance(marker_args[0], abc.Iterable)
+        and not isinstance(marker_args[0], abc.Mapping)
     )
 
 
