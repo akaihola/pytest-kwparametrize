@@ -1,5 +1,9 @@
 # content of test_conditional_raising.py
-from contextlib import nullcontext as does_not_raise
+try:
+    from contextlib import nullcontext as does_not_raise
+except ImportError:
+    # Python <3.7
+    from contextlib import suppress as does_not_raise
 
 import pytest
 
