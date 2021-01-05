@@ -105,8 +105,8 @@ def kwparametrize(
 
     :param metafunc:
         A :py:class:`pytest.Metafunc` object representing the test function.
-        **Note:** The :ref:`pytest.mark.kwparametrize ref` decorator accepts all the same
-        arguments as this function except for ``metafunc`` which must be omitted.
+        **Note:** The :ref:`pytest.mark.kwparametrize ref` decorator accepts all the
+        same arguments as this function except for ``metafunc`` which must be omitted.
 
     :param args:
         The list of test arguments determines how often a test is invoked with

@@ -29,3 +29,6 @@ jobs:
     - name: Check import ordering with Isort
       run: |
         isort --check --diff .
+    - name: Enforce Python style guide with Flake8
+      run: |
+        flake8
