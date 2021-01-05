@@ -23,3 +23,6 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Check code formatting with Black
+      run: |
+        black --check --diff .
