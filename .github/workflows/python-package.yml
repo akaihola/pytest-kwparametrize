@@ -11,27 +11,42 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
+
     - uses: actions/checkout@v2
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
+    - uses: actions/cache@v2
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.cfg') }}
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade 'pip>=20.3'  # strict dependency resolution added in pip 20.3
+        python -m pip install \
+          --upgrade --upgrade-strategy=eager \
+          'pip>=20.3'  # strict dependency resolution added in pip 20.3
         pip install -e '.[testing]'
+
     - name: Test with pytest
       run: |
         pytest
+
     - name: Check code formatting with Black
       run: |
         black --check --diff .
+
     - name: Check import ordering with Isort
       run: |
         isort --check --diff .
+
     - name: Enforce Python style guide with Flake8
       run: |
         flake8
+
     - name: Lint code with Pylint
       run: |
         pylint src
