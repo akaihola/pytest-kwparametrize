@@ -5,6 +5,9 @@ These features and fixes will be included in the next release:
 
 Added
 -----
+- Accept ``pytest.param()`` keywords for test cases
+- All test case parameters appearing in at least one test are now considered as required
+  unless they are also mentioned in defaults
 
 Fixed
 -----
