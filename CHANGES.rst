@@ -5,6 +5,16 @@ These features and fixes will be included in the next release:
 
 Added
 -----
+
+Fixed
+-----
+
+
+0.0.3_ – 2021-01-22
+===================
+
+Added
+-----
 - Accept ``pytest.param()`` keywords for test cases
 - All test case parameters appearing in at least one test are now considered as required
   unless they are also mentioned in defaults
@@ -29,6 +39,7 @@ Added
 - Initial implementation
 
 
-.. _Unreleased: https://github.com/akaihola/pytest-kwparametrize/compare/0.0.2...HEAD
+.. _Unreleased: https://github.com/akaihola/pytest-kwparametrize/compare/0.0.3...HEAD
+.. _0.0.3: https://github.com/akaihola/pytest-kwparametrize/compare/0.0.2...0.0.3
 .. _0.0.2: https://github.com/akaihola/pytest-kwparametrize/compare/0.0.1...0.0.2
 .. _0.0.1: https://github.com/akaihola/pytest-kwparametrize/compare/365dca376712d403e6ef81ce32b88715209c990d...0.0.1
