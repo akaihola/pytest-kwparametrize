@@ -5,16 +5,16 @@ from collections import abc
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
 
+import pytest
 from _pytest.mark import ParameterSet
+from _pytest.python import Metafunc
+from pytest import fail
 
 if sys.version_info >= (3, 8):
+    # pylint: disable=no-name-in-module
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
-
-import pytest
-from _pytest.python import Metafunc
-from pytest import fail
 
 
 def _get_keyword_parameters(function: Callable[..., Any]) -> List[str]:
@@ -81,10 +81,14 @@ TestParams = Dict[str, Any]
 
 
 class ParametrizeKwArgs(TypedDict):
+    """Types for kwparametrize() keyword arguments"""
+
     ...
 
 
 class MarkerKwArgs(TypedDict):
+    """Types for @pytest.mark.kwparametrize() keyword arguments"""
+
     defaults: TestParams
 
 

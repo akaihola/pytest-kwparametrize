@@ -1,4 +1,6 @@
-from textwrap import dedent, indent
+"""Unit tests for pytest-kwparametrize"""
+
+from textwrap import dedent
 
 import pytest
 
@@ -75,12 +77,14 @@ import pytest
     ],
 )
 def test_mark_kwparametrize(testdir, pyfile, expect_passed):
+    """@pytest.mark.kwparametrize() works correctly"""
     testdir.makepyfile(f"import pytest\n" f"{dedent(pyfile)}")
     result = testdir.runpytest()
-    try:
-        result.assert_outcomes(passed=expect_passed)
-    except AssertionError:
-        test_output = indent(result.stdout.str(), "> ", lambda _: True)
-        print(f"\n\n{test_output}\n")  # for debugging the test
-        raise
+    # # Uncomment to see output for a failing Pytest run
+    # try:
+    #     result.assert_outcomes(passed=expect_passed)
+    # except AssertionError:
+    #     test_output = indent(result.stdout.str(), "> ", lambda _: True)
+    #     print(f"\n\n{test_output}\n")
+    #     raise
     result.assert_outcomes(passed=expect_passed)
