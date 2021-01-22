@@ -65,12 +65,10 @@ import pytest
         ),
         (
             """
-            from pytest import LogCaptureFixture
-
             @pytest.mark.kwparametrize(dict(myparam=1))
             def test_fixture(caplog, myparam):
                 assert myparam == 1
-                assert isinstance(caplog, LogCaptureFixture)
+                assert type(caplog).__name__ == "LogCaptureFixture"
             """,
             1,
         ),

@@ -1,15 +1,23 @@
 """Implementation of the ``kwparametrize`` Pytest plugin"""
 
+import sys
 from collections import abc
 from inspect import Parameter, signature
-from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
+
+from _pytest.mark import ParameterSet
+
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 import pytest
 from _pytest.python import Metafunc
 from pytest import fail
 
 
-def _get_keyword_parameters(function: Callable) -> List[str]:
+def _get_keyword_parameters(function: Callable[..., Any]) -> List[str]:
     return [
         param_name
         for param_name, param in signature(function).parameters.items()
@@ -30,9 +38,14 @@ PARAMETRIZE_KEYWORDS = set(_get_keyword_parameters(Metafunc.parametrize)[3:])
 PYTEST_PARAM_KEYWORDS = set(_get_keyword_parameters(pytest.param))
 
 
+DictOfAny = Dict[str, Any]
+TestCase = Mapping[str, Any]
+TestCases = Sequence[TestCase]
+
+
 def _get_param(
-    name: str, params: Dict[str, Any], defaults: Dict[str, Any], metafunc: Metafunc
-):
+    name: str, params: DictOfAny, defaults: DictOfAny, metafunc: Metafunc
+) -> Any:
     if name in params:
         return params[name]
     if defaults[name] is ...:
@@ -44,42 +57,57 @@ def _get_param(
     return defaults[name]
 
 
-def _has_one_iterable(marker_args: List[Any]):
+def _has_one_iterable(marker_args: List[Union[TestCases, TestCase]]) -> bool:
     return (
         len(marker_args) == 1
-        and isinstance(marker_args[0], abc.Iterable)
+        and isinstance(marker_args[0], abc.Sequence)
         and not isinstance(marker_args[0], abc.Mapping)
     )
 
 
-def _parse_marker_args(
-    marker_args: Iterable[Union[List[Dict[str, Any]], Dict[str, Any]]]
-) -> List[Any]:
+def _parse_marker_args(marker_args: List[Union[TestCases, TestCase]]) -> List[TestCase]:
     if _has_one_iterable(marker_args):
         # called like:
         # @pytest.mark.kwparametrize([dict(<case1>), dict(<case2>), ...])
-        (testcase_dicts,) = marker_args
-        return testcase_dicts
-    # called like:
-    # @pytest.mark.kwparametrize(dict(<case1>), dict(<case2>), ...)
-    return marker_args
+        testcase_dicts = cast(TestCases, marker_args[0])
+    else:
+        # called like:
+        # @pytest.mark.kwparametrize(dict(<case1>), dict(<case2>), ...)
+        testcase_dicts = cast(TestCases, marker_args)
+    return list(testcase_dicts)
 
 
-def _parse_marker_kwargs(kwargs: Dict[str, Any]):
+TestParams = Dict[str, Any]
+
+
+class ParametrizeKwArgs(TypedDict):
+    ...
+
+
+class MarkerKwArgs(TypedDict):
+    defaults: TestParams
+
+
+def _parse_marker_kwargs(kwargs: DictOfAny) -> Tuple[TestParams, ParametrizeKwArgs]:
     parametrize_kwargs = {k: v for k, v in kwargs.items() if k in PARAMETRIZE_KEYWORDS}
     defaults = {k: v for k, v in kwargs.items() if k not in PARAMETRIZE_KEYWORDS}
     if set(defaults) == {"defaults"}:
         # called like:
         # @pytest.mark.kwaparametrize(..., defaults=dict(param1=, param2=, ...))
-        return defaults["defaults"], parametrize_kwargs
-    # called like:
-    # @pytest.mark.kwaparametrize(..., param1=, param2=, ...)
-    return defaults, parametrize_kwargs
+        default_params = cast(TestParams, defaults["defaults"])
+    else:
+        # called like:
+        # @pytest.mark.kwaparametrize(..., param1=, param2=, ...)
+        default_params = defaults
+    return default_params, cast(ParametrizeKwArgs, parametrize_kwargs)
+
+
+ParametrizeArgValues = List[ParameterSet]
 
 
 def _param_dicts_to_tuples(
-    testcase_dicts: List[Dict[str, Any]], defaults: Dict[str, Any], metafunc: Metafunc
-) -> List[Tuple[Any]]:
+    testcase_dicts: List[TestCase], defaults: TestParams, metafunc: Metafunc
+) -> ParametrizeArgValues:
     argvalues = []
     for params in testcase_dicts:
         param_values = (
@@ -96,7 +124,7 @@ def _param_dicts_to_tuples(
 
 def kwparametrize(
     metafunc: Metafunc,
-    *args: Union[List[Dict[str, Any]], Dict[str, Any]],
+    *args: Union[List[DictOfAny], DictOfAny],
     **kwargs: Any,
 ) -> None:
     """Add new invocations to the underlying test function using the list
