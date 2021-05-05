@@ -92,6 +92,20 @@ class MarkerKwArgs(TypedDict):
     defaults: TestParams
 
 
+def raise_wrong_test_case_type(params):
+    if isinstance(params, str):
+        raise TypeError(
+            "Test cases need to be dictionaries. Did you by accident include"
+            " a @pytest.mark.parametrize style comma separated list of"
+            f" argnames in {params[:100]!r}?"
+        )
+    else:
+        raise TypeError(
+            "Test cases need to be dictionaries. Encountered"
+            f" {type(params)} instead."
+        )
+
+
 def _parse_marker_kwargs(kwargs: DictOfAny) -> Tuple[TestParams, ParametrizeKwArgs]:
     parametrize_kwargs = {k: v for k, v in kwargs.items() if k in PARAMETRIZE_KEYWORDS}
     defaults = {k: v for k, v in kwargs.items() if k not in PARAMETRIZE_KEYWORDS}
@@ -117,9 +131,13 @@ def _param_dicts_to_tuples(
         param_values = (
             _get_param(name, params, defaults, metafunc) for name in defaults
         )
+        try:
+            keywords_and_values = params.items()
+        except AttributeError:
+            raise_wrong_test_case_type(params)
         param_keywords = {
             keyword: value
-            for keyword, value in params.items()
+            for keyword, value in keywords_and_values
             if keyword in PYTEST_PARAM_KEYWORDS
         }
         argvalues.append(pytest.param(*param_values, **param_keywords))
@@ -188,7 +206,11 @@ def kwparametrize(
     testcase_dicts = _parse_marker_args(args)
     defaults, parametrize_kwargs = _parse_marker_kwargs(kwargs)
     for params in testcase_dicts:
-        for name in params:
+        try:
+            names = iter(params)
+        except TypeError:
+            raise_wrong_test_case_type(params)
+        for name in names:
             if name not in PYTEST_PARAM_KEYWORDS:
                 defaults.setdefault(name, ...)
     testcase_tuples = _param_dicts_to_tuples(testcase_dicts, defaults, metafunc)
