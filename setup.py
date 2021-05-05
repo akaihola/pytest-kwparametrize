@@ -26,8 +26,8 @@ def make_pypi_compliant_readme() -> str:
     )
     if modified_readme == original_readme:
         raise RuntimeError(
-            f"The contributors table couldn't be found in README.rst using the pattern "
-            f"'{CONTRIBUTORS_RE.pattern}'"
+            "The contributors table couldn't be found in README.rst using the pattern "
+            "'{}'".format(CONTRIBUTORS_RE.pattern)
         )
     return modified_readme
 

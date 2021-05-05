@@ -1,3 +1,5 @@
+# -*- coding: future_fstrings -*-
+
 """Implementation of the ``kwparametrize`` Pytest plugin"""
 
 import sys
@@ -86,10 +88,8 @@ class ParametrizeKwArgs(TypedDict):
     ...
 
 
-class MarkerKwArgs(TypedDict):
-    """Types for @pytest.mark.kwparametrize() keyword arguments"""
-
-    defaults: TestParams
+MarkerKwArgs = TypedDict("MarkerKwArgs", {"defaults": TestParams})
+MarkerKwArgs.__doc__ = """Types for @pytest.mark.kwparametrize() keyword arguments"""
 
 
 def _parse_marker_kwargs(kwargs: DictOfAny) -> Tuple[TestParams, ParametrizeKwArgs]:
@@ -129,7 +129,7 @@ def _param_dicts_to_tuples(
 def kwparametrize(
     metafunc: Metafunc,
     *args: Union[List[DictOfAny], DictOfAny],
-    **kwargs: Any,
+    **kwargs: Any
 ) -> None:
     """Add new invocations to the underlying test function using the list
     of argvalues for the test function arguments.  Parametrization is performed
