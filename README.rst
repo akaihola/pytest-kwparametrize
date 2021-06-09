@@ -138,6 +138,18 @@ Thanks goes to these people (`emoji key`_):
                   title="Reviewed Pull Requests">👀</a>
                <a href="#maintenance-akaihola" title="Maintenance">🚧</a>
            </td>
+           <td>
+               <a href="https://github.com/Mystic-Mirage">
+                   <img src="https://avatars.githubusercontent.com/u/1079805?v=3" width="100px;" alt="@Mystic-Mirage"/>
+                   <br />
+                   <sub><b>Alexander Tishin</b></sub>
+               </a>
+               <br />
+               <a href="https://github.com/akaihola/darker/commits?author=Mystic-Mirage"
+                  title="Code">💻</a>
+               <a href="https://github.com/akaihola/darker/commits?author=Mystic-Mirage"
+                  title="Documentation">📖</a>
+           </td>
        </tr>
    </table>
    <!-- ALL-CONTRIBUTORS-LIST:END -->
