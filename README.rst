@@ -76,7 +76,7 @@ just as with ``@pytest.mark.parametrize``::
     def test_my_func(a, b, expect):
         assert my_func(a, b) == expect
 
-Default values can also be paassed as a dictionary
+Default values can also be passed as a dictionary
 using the ``defaults=`` keyword argument
 (here all parameters have a default)::
 
