@@ -206,7 +206,7 @@ def pytest_generate_tests(metafunc: Metafunc) -> None:
 
 
 def pytest_configure(config):
-    """Configure Pytest to know about the ``@pytest.mark.kwparametrize`` marker """
+    """Configure Pytest to know about the ``@pytest.mark.kwparametrize`` marker"""
     config.addinivalue_line(
         "markers",
         "kwparametrize(*argvalues):"
